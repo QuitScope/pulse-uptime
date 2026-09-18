@@ -20,6 +20,16 @@ Ja, es ist wieder ein typischer Uptime-Monitor. Registriert URLs, prüft sie in 
 
 Server und Worker sind getrennte Prozesse. Der Server nimmt HTTP-Requests an und schiebt fällige Checks in eine Redis-Queue (BullMQ). Der Worker zieht die Jobs und führt die eigentlichen HTTP-Checks aus. Heißt: Worker lässt sich beliebig oft parallel starten, ohne dass sich was ins Gehege kommt.
 
+```mermaid
+flowchart LR
+    Browser["Browser<br/>React Status-Seite"] -->|"HTTP :3000"| Server["Server (Fastify)<br/>API + Scheduler-Tick"]
+    Server -->|enqueue| Queue[("Redis Queue<br/>BullMQ")]
+    Queue -->|pull| Worker["Worker<br/>führt HTTP-Checks aus"]
+    Worker -->|"HTTP-Check"| Targets["Überwachte URLs<br/>z.B. beispiel.de"]
+    Server -->|TypeORM| DB[("Postgres<br/>Monitor / Check / Incident")]
+    Worker -.->|"Ergebnis speichern"| DB
+```
+
 ## Laufen lassen
 
 ```bash
